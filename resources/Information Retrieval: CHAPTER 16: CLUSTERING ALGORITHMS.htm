@@ -1,0 +1,1180 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Information Retrieval: CHAPTER 16: CLUSTERING ALGORITHMS</title></head><body bgcolor="#FFFFFF">
+
+<a href="http://orion.lcg.ufrj.br/Dr.Dobbs/books/book5/chap17.htm"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/next.gif" alt="Next Chapter" align="right" border="0"></a>
+<a href="http://orion.lcg.ufrj.br/Dr.Dobbs/books/book5/toc.htm"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/toc.gif" alt="Return to Table of Contents" align="right" border="0"></a>
+<a href="http://orion.lcg.ufrj.br/Dr.Dobbs/books/book5/chap15.htm"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/prev.gif" alt="Previous Chapter" align="right" border="0"></a>
+
+
+<h1><a name="066c_1065">CHAPTER 16: CLUSTERING ALGORITHMS</a><a name="066c_1065"></a></h1><p><a name="066c_1065">
+</a></p><h4><a name="066c_1065">Edie Rasmussen</a></h4><p><a name="066c_1065">
+University of Pittsburgh</a></p><p><a name="066c_1065">
+Abstract</a></p><p><a name="066c_1065">
+</a><a name="066c_1062"></a><a name="066c_1063"></a><a name="066c_1064">Cluster
+ analysis is a technique for multivariate analysis that assigns items to
+ automatically created groups based on a calculation of the degree of 
+association between items and groups. In the information retrieval (IR) 
+field, cluster analysis has been used to create groups of documents with
+ the goal of improving the efficiency and effectiveness of retrieval, or
+ to determine the structure of the literature of a field. The terms in a
+ document collection can also be clustered to show their relationships. 
+The two main types of cluster analysis methods are the nonhierarchical, 
+which divide a data set of <i>N </i>items into <i>M </i>clusters, and 
+the hierarchical, which produce a nested data set in which pairs of 
+items or clusters are successively linked. The nonhierarchical methods 
+such as the single pass and reallocation methods are heuristic in nature
+ and require less computation than the hierarchical methods. However, 
+the hierarchical methods have usually been preferred for cluster-based 
+document retrieval. The commonly used hierarchical methods, such as 
+single link, complete link, group average link, and Ward's method, have 
+high space and time requirements. In order to cluster the large data 
+sets with high dimensionality that are typically found in IR 
+applications, good algorithms (ideally <i>O</i>(<i>N</i><sup>2</sup>) time, <i>O</i>(<i>N</i>)
+ space) must be found. Examples are the SLINK and minimal spanning tree 
+algorithms for the single link method, the Voorhees algorithm for group 
+average link, and the reciprocal nearest neighbor algorithm for Ward's 
+method.</a></p><p><a name="066c_1064">
+
+
+
+
+
+</a></p><h1><a name="066e_0001">16.1 CLUSTER ANALYSIS</a><a name="066e_0001"></a></h1><p><a name="066e_0001">
+
+
+
+
+
+</a></p><h2><a name="066f_1068">16.1.1 Introduction</a><a name="066f_1068"></a></h2><p><a name="066f_1068">
+</a><a name="066f_1065"></a><a name="066f_1066">Cluster analysis is a 
+statistical technique used to generate a category structure which fits a
+ set of observations. The groups which are formed should have a high 
+degree of association between members of the same group and a low degree
+ between members of different groups (Anderberg 1973). While cluster 
+analysis is sometimes referred to as automatic classification, this is 
+not strictly accurate since the classes formed are not known prior to 
+processing, as classification implies, but are defined by the items 
+assigned to them.</a></p><p><a name="066f_1066">
+Because there is no need for the classes to be identified prior to 
+processing, cluster analysis is useful to provide structure in large 
+multivariate data sets. It has been described as a tool of discovery 
+because it has the potential to reveal previously undetected 
+relationships based on complex data (Anderberg 1973). An early 
+application of cluster analysis was to determine taxonomic relationships
+ among species. Psychiatric profiles, medical and clinical data, census 
+and survey data, images, and chemical structures and properties have all
+ been studied using cluster analytic methods, and there is an extensive 
+and widely scattered journal literature on the subject.</a></p><p><a name="066f_1066">
+Basic texts include those by Anderberg (1973), Hartigan (1975), Everitt 
+(1980), Aldenderfer and Blashfield (1984), Romesburg (1984), Spath 
+(1985), Jain and Dubes (1988) and Kaufman (1990). Taxonomic applications
+ have been described by Sneath and Sokal (1973), and social science 
+applications by Lorr (1983) and Hudson and Associates (1982). 
+Comprehensive reviews by Lee (1981), Dubes and Jain (1980) and Gordon 
+(1987) are also recommended.</a></p><p><a name="066f_1066">
+</a><a name="066f_1067">Because cluster analysis is a technique for 
+multivariate analysis that has application in many fields, it is 
+supported by a number of software packages which are often available in 
+academic and other computing environments. Most of the methods and some 
+of the algorithms described in this chapter are found in statistical 
+analysis packages such as SAS, SPSSX, and BMDP and cluster analysis 
+packages such as CLUSTAN and CLUSTAR/CLUSTID. Brief descriptions and 
+sources for these and other packages are provided by Romesburg (1984).</a></p><p><a name="066f_1067">
+</a></p><p><a name="066f_1067">
+
+
+
+
+
+
+
+</a></p><h2><a name="0670_0001">16.1.2 Applications in Information Retrieval</a><a name="0670_0001"></a></h2><p><a name="0670_0001">
+The ability of cluster analysis to categorize by assigning items to 
+automatically created groups gives it a natural affinity with the aims 
+of information storage and retrieval. Cluster analysis can be performed 
+on documents in several ways:</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">
+     Documents may be clustered on the basis of the terms that they 
+contain. The aim of this approach has usually been to provide more 
+efficient or more effective retrieval, though it has also been used 
+after retrieval to provide structure to large sets of retrieved 
+documents. In distributed systems, clustering can be used to allocate 
+documents for storage. A recent review (Willett 1988) provides a 
+comprehensive summary of research on term-based document clustering.</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">
+     Documents may be clustered based on co-occurring citations in order
+ to provide insights into the nature of the literature of a field (e.g.,
+ Small and Sweeney [1985]).</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">
+     Terms may be clustered on the basis of the documents in which they 
+co-occur, in order to aid in the construction of a thesaurus or in the 
+enhancement of queries (e.g., Crouch [1988]).</a></p><p><a name="0670_0001">
+Although cluster analysis can be easily implemented with available software packages, it is not without problems. These include:</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     Selecting the attributes on which items are to be clustered and their representation.</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     Selecting an appropriate clustering method and similarity measure from those available .</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     Creating the clusters or cluster hierarchies, which can be expensive in terms of computational resources.</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     Asessing the validity of the result obtained.</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     If the collection to be clustered is a dynamic one, the requirements for update must be considered.</a></p><p><a name="0670_0001">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">
+     If the aim is to use the clustered collection as the basis for 
+information retrieval, a method for searching the clusters or cluster 
+hierarchy must be selected.</a></p><p><a name="0670_0001">
+The emphasis in this chapter will be on the range of clustering methods 
+available and algorithms for their implementation, with discussion of 
+the applications and evaluation that have been carried out in an 
+information retrieval environment. The following notation will be used: <i>N </i>for the numberof items <i>D<sub>i </sub></i>in a data set, <i>L </i>for its dimensionality, and <i>M </i>for the number of clusters <i>C<sub>i </sub></i>created. It will be assumed that the items to be clustered are documents, and each document <i>D<sub>i </sub></i>(or cluster representative <i>C<sub>i</sub></i>) is represented by (w<i>eight<sub>i</sub></i>1, . . ., <i>weight<sub>iL</sub></i>), where <i>weight<sub>ik </sub></i>is the weight assigned to <i>term<sub>k </sub></i>in <i>D<sub>i </sub></i>or <i>C<sub>i</sub></i>.
+ The choice of an appropriate document representation is discussed 
+elsewhere in this text; a summary of research on term-weighting 
+approaches is provided by Salton and Buckley (1988).</a></p><p><a name="0670_0001">
+</a></p><p><a name="0670_0001">
+
+
+</a></p><p><a name="0670_0001">
+
+
+
+
+
+
+
+</a></p><h1><a name="0671_0001">16.2 MEASURES OF ASSOCIATION</a><a name="0671_0001"></a></h1><p><a name="0671_0001">
+
+
+
+
+
+</a></p><h2><a name="0672_1069">16.2.1 Introduction</a><a name="0672_1069"></a></h2><p><a name="0672_1069">
+</a><a name="0672_1068">In order to cluster the items in a data set, 
+some means of quantifying the degree of association between them is 
+required. This may be a distance measure, or a measure of similarity or 
+dissimilarity. Some clustering methods have a theoretical requirement 
+for use of a specific measure (Euclidean distance for Ward's method, for
+ example), but more commonly the choice of measure is at the discretion 
+of the researcher.</a></p><p><a name="0672_1068">
+While there are a number of similarity measures available, and the 
+choice of similarity measure can have an effect on the clustering 
+results obtained, there have been only a few comparative studies 
+(summarized by Willett [1988]). In cluster-based retrieval, the 
+determination of interdocument similarity depends on both the document 
+representation, in terms of the weights assigned to the indexing terms 
+characterizing each document, and the similarity coefficient that is 
+chosen. The results of tests by Willett (1983) of similarity 
+coefficients in cluster-based retrieval suggest that it is important to 
+use a measure that is normalized by the length of the document vectors. 
+The results of tests on weighting schemes were less definitive but 
+suggested that weighting of document terms is not as significant in 
+improving performance in cluster-based retrieval as it is in other types
+ of retrieval. Sneath and Sokal (1973) point out that simple similarity 
+coefficients are often monotonic with more complex ones, and argue 
+against the use of weighting schemes. The measures described below are 
+commonly used in information retrieval applications. They are 
+appropriate for binary or real-valued weighting scheme.</a></p><p><a name="0672_1068">
+</a></p><p><a name="0672_1068">
+
+
+
+
+
+
+
+</a></p><h2><a name="0673_106b">16.2.2 Similarity Measures</a><a name="0673_106b"></a></h2><p><a name="0673_106b">
+</a><a name="0673_1069"></a><a name="0673_106a">A variety of distance 
+and similarity measures is given by Anderberg (1973), while those most 
+suitable for comparing document vectors are discussed by Salton (1989). 
+The Dice, Jaccard and cosine coefficients have the attractions of 
+simplicity and normalization and have often been used for document 
+clustering.</a></p><p><a name="0673_106a">
+Dice coefficient:</a></p><p><a name="0673_106a">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/422_a.gif"></a></p><p><a name="0673_106a">
+If binary term weights are used, the Dice Coefficient reduces to:</a></p><p><a name="0673_106a">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/422_b.gif"></a></p><p><a name="0673_106a">
+where <i>C</i> is the number of terms that <i>D<sub>i</sub></i> and <i>D<sub>j</sub></i> have in common, and <i>A</i> and <i>B</i> are the number of terms in <i>D<sub>i</sub></i> and <i>D<sub>j</sub></i>.</a></p><p><a name="0673_106a">
+Jaccard coefficient:</a></p><p><a name="0673_106a">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/422_c.gif"></a></p><p><a name="0673_106a">
+Cosine coefficient:</a></p><p><a name="0673_106a">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/422_d.gif"></a></p><p><a name="0673_106a">
+</a></p><p><a name="0673_106a">
+
+
+
+
+
+
+
+</a></p><h2><a name="0674_106c">16.2.3 The Similarity Matrix</a><a name="0674_106c"></a></h2><p><a name="0674_106c">
+</a><a name="0674_106b">Many clustering methods are based on a pairwise 
+coupling of the most similar documents or clusters, so that the 
+similarity between every pair of points must be known. This necessitates
+ the calculation of the <i>similarity matrix</i>; when the similarity measure is symmetric (<i>S<sub>ij </sub></i>= <i>S<sub>ji</sub></i>), the lower triangular matrix is sufficient (Figure 16.1).</a></p><p><a name="0674_106b">
+The inverted file algorithm is particularly useful in limiting the 
+amount of computation required to calculate a similarity matrix, if the 
+similarity measure used is one that results in a 0 value whenever a 
+document-document or document-cluster pair have no terms in common 
+(Willett 1980; Perry and Willett 1983). The document term list is used 
+as an index to the inverted index lists that are needed for the 
+similarity calculation. Only those document/cluster pairs that share at 
+least one common term will have their similarity calculated; the 
+remaining values in the similarity matrix are set to 0. The inverted 
+file algorithm is as follows:</a></p><p><a name="0674_106b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/423_a.gif"></a></p><p><a name="0674_106b">
+</a></p><h4><a name="0674_106d">Figure 16.1: Similarity matrix</a><a name="0674_106d"></a></h4><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">for ( docno = 0; docno &lt; n; docno++ )</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">{</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">for ( i = 0; i &lt; doclength; i++ )</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">{</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">retrieve_inverted_list ( term[i] );</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">for ( j = 0; j &lt; invlength; j++ ) counter[doc[j]]++;</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">}</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">for ( doc2 = 0; doc2 &lt; n; doc2++ )</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">{</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">if (counter [doc2]) calc_similarity( docno, doc2 );</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">}</a></pre><p><a name="0674_106d">
+</a></p><pre><a name="0674_106d">}</a></pre><p><a name="0674_106d">
+The inverted file algorithm can be effectively incorporated in the 
+clustering algorithms described in this chapter when the calculation of 
+the similarity matrix, or a single row of it, is required for a document
+ collection.</a></p><p><a name="0674_106d">
+It should be noted that the similarity matrix can be the basis for 
+identifying a nearest neighbor (NN), that is, finding the closest vector
+ to a given vector from a set of <i>N</i> multidimensional vectors. The 
+identification of an NN arises in many clustering algorithms, and for 
+large data sets makes a significant contribution to the computational 
+requirement. Calculating and storing the similarity matrix, or 
+recalculating it when needed, provides a brute force approach to nearest
+ neighbor identification. Therefore, if an efficient NN-finding 
+algorithm can be incorporated into the clustering algorithm, 
+considerable savings of processing time may be achieved. However, 
+although there are a number of techniques available for introducing 
+efficiency into the NN-finding process (Bentley et al. 1980; Murtagh 
+1985), these techniques are generally inappropriate for data sets with 
+the high dimensionality typical of information retrieval applications. 
+Use of the inverted file algorithm to calculate the similarity matrix or
+ a row of it seems to be the best optimization technique available in 
+these circumstances.</a></p><p><a name="0674_106d">
+</a></p><p><a name="0674_106d">
+
+
+</a></p><p><a name="0674_106d">
+
+
+
+
+
+
+
+</a></p><h1><a name="0675_0001">16.3 CLUSTERING METHOS</a><a name="0675_0001"></a></h1><p><a name="0675_0001">
+
+
+
+
+
+</a></p><h2><a name="0676_106e">16.3.1 Methods and Associated Algorithms</a><a name="0676_106e"></a></h2><p><a name="0676_106e">
+</a><a name="0676_106c"></a><a name="0676_106d">There are a very large number of ways of sorting <i>N</i> objects into <i>M</i> groups, a problem compounded by the fact that <i>M</i>
+ is usually unknown. Most of the possible arrangements are of no 
+interest; it is the role of a clustering method to identify a set of 
+groups or cluster that reflects some underlying structure in the data. 
+Moreover, there are many clustering methods available, which have 
+differing theoretical or empirical bases and therefore produce different
+ cluster structures. For a given clustering <i>method</i>, there may be a choice of clustering <i>algorithm</i>
+ or means to implement the method. The choice of clustering method will 
+determine the outcome, the choice of algorithm will determine the 
+efficiency with which it is achieved. In this section, an overview of 
+the clustering methods most used in information retrieval will be 
+provided. The associated algorithms that are best suited to the 
+processing of the large data sets found in information retrieval 
+applications are discussed in sections 16.4 and 16.5.</a></p><p><a name="0676_106d">
+</a></p><p><a name="0676_106d">
+
+
+
+
+
+
+
+</a></p><h2><a name="0677_106f">16.3.2 Computational and Storage Requirements</a><a name="0677_106f"></a></h2><p><a name="0677_106f">
+</a><a name="0677_106e">In cases where the data set to be processed is 
+very large, the resources required for cluster analysis may be 
+considerable. A major component of the computation required is the 
+calculation of the document-document or document-cluster similarity. The
+ time requirement will be minimally <i>O</i>(<i>NM</i>), where <i>M</i> 
+is the number of clusters, for the simpler reallocation methods; where 
+the similarity matrix must be constructed, the proportionality is at 
+least <i>N</i><sup>2</sup>. Most of the preferred clustering methods have time requirements of at least <i>O</i>(<i>N</i><sup>2</sup>). The storage requirement will be <i>O</i>(<i>N</i>) if the data set is stored, or <i>O</i>(<i>N</i><sup>2</sup>) if the similarity matrix is stored. For large <i>N</i>
+ this may be unacceptable, and disk accesses may make processing time 
+too large if the similarity matrix is stored on disk. An alternative is 
+to recalculate the similarity matrix from the stored data whenever it is
+ needed to identify the current most similar pair, but this increases 
+the time requirement by a factor of <i>N</i><sup>2</sup>.</a></p><p><a name="0677_106e">
+Because of the heavy demands of processing and storage requirements, 
+much of the early work on cluster analysis for information retrieval was
+ limited to small data sets, often only a few hundred items. However, 
+improvements in processing and storage capacity and the introduction of 
+efficient algorithms for implementing some clustering methods and 
+finding nearest neighbors have made it feasible to cluster increasingly 
+large data sets. Salton and Bergmark (1981) have pointed out that there 
+is a high degree of parallelism in the calculation of a set of 
+similarity values, and parallel hardware also offers the potential for 
+increased processing efficiency (Willett and Rasmussen 1990).</a></p><p><a name="0677_106e">
+</a></p><p><a name="0677_106e">
+
+
+
+
+
+
+
+</a></p><h2><a name="0678_1070">16.3.3 Survey of Clustering Methods</a><a name="0678_1070"></a></h2><p><a name="0678_1070">
+</a><a name="0678_106f">Clustering methods are usually categorized according to the type of cluster structure they produce. The simple <i>nonhierarchical</i> methods divide the data set of <i>N</i> objects into <i>M</i>
+ clusters; where no overlap is allowed, these are known as partitioning 
+methods. Each item has membership in the cluster with which it is most 
+similar, and the cluster may be represented by a centroid or cluster 
+representative that is indicative of the characteristics of the items it
+ contains. The more complex <i>hierarchical</i> methods produce a nested
+ data set in which pairs of items or clusters are successively linked 
+until every item in the data set is connected. The hierarchical methods 
+can be either <i>agglomerative</i>, with <i>N</i> - 1 pairwise joins beginning from an unclustered data set, or <i>divisive</i>, beginning with all objects in a single cluster and progressing through <i>N</i>
+ - 1 divisions of some cluster into a smaller cluster. The divisive 
+methods are less commonly used and few algorithms are available; only 
+agglomerative methods will be discussed in this chapter.</a></p><p><a name="0678_106f">
+
+
+
+
+
+</a></p><h3><a name="0678_106f">Nonhierarchical methods</a></h3><p><a name="0678_106f">
+</a><a name="0679_1070"></a><a name="0679_1071"></a><a name="0679_1072">The
+ nonhierarchical methods are heuristic in nature, since a priori 
+decisions about the number of clusters, cluster size, criterion for 
+cluster membership, and form of cluster representation are required. 
+Since the large number of possible divisions of <i>N</i> items into <i>M</i>
+ clusters make an optimal solution impossible, the nonhierarchical 
+methods attempt to find an approximation, usually by partitioning the 
+data set in some way and then reallocating items until some criterion is
+ optimized. The computational requirement <i>O</i>(<i>NM</i>) is much lower than for the hierarchical methods if <i>M</i> &lt;&lt; <i>N</i>,
+ so that large data sets can be partitioned. The nonhierarchical methods
+ were used for most of the early work in document clustering when 
+computational resources were limited; see for example work on the SMART 
+project, described by Salton (1971).</a></p><p><a name="0679_1072">
+</a></p><p><a name="0679_1072">
+
+
+
+
+
+
+
+</a></p><h3><a name="0679_1072">Hierarchical methods</a></h3><p><a name="0679_1072">
+</a><a name="067a_1073"></a><a name="067a_1074"></a><a name="067a_1075">Most
+ of the early published work on cluster analysis employed hierarchical 
+methods (Blashfield and Aldenderfer 1978), though this was not so in the
+ IR field. With improvements in computer resources, the easy 
+availability of software packages for cluster analysis, and improved 
+algorithms, the last decade of work on clustering in IR retrieval has 
+concentrated on the hierarchical agglomerative clustering methods (HACM,
+ Willett [1988]).</a></p><p><a name="067a_1075">
+The cluster structure resulting from a hierarchical agglomerative clustering method is often displayed as a <i>dendrogram</i>
+ like that shown in Figure 16.2. The order of pairwise coupling of the 
+objects in the data set is shown, and the value of the similarity 
+function (level) at which each fusion occurred. The dendrogram is a 
+useful representation when considering retrieval from a clustered set of
+ documents, since it indicates the paths that the retrieval process may 
+follow.</a></p><p><a name="067a_1075">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/426_a.gif"></a></p><p><a name="067a_1075">
+</a></p><h4><a name="067a_107e">Figure 16.2: Dendrogram of a hierarchical classification</a><a name="067a_107e"></a></h4><p><a name="067a_107e">
+The most commonly used hierarchical agglomerative clustering methods and their characteristics are:</a></p><p><a name="067a_107e">
+</a><a name="067a_1076"></a><a name="067a_1077"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <b>single link:</b>
+ The single link method joins, at each step, the most similar pair of 
+objects that are not yet in the same cluster. It has some attractive 
+theoretical properties (Jardine and Sibson 1971) and can be implemented 
+relatively efficiently, so it has been widely used. However, it has a 
+tendency toward formation of long straggly clusters, or chaining, which 
+makes it suitable for delineating ellipsoidal clusters but unsuitable 
+for isolating spherical or poorly separated clusters.</a></p><p><a name="067a_1077">
+</a><a name="067a_1078"></a><a name="067a_1079"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <b>complete link:</b>
+ The complete link method uses the least similar pair between each of 
+two clusters to determine the intercluster similarity; it is called 
+complete link because all entities in a cluster are linked to one 
+another within some minimum similarity. Small, tightly bound clusters 
+are characteristic of this method.</a></p><p><a name="067a_1079">
+</a><a name="067a_107a"></a><a name="067a_107b"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <b>group average link:</b>
+ As the name implies, the group average link method uses the average 
+values of the pairwise links within a cluster to determine similarity. 
+All objects contribute to intercluster similarity, resulting in a 
+structure intermediate between the loosely bound single link clusters 
+and tightly bound complete link clusters. The group average method has 
+ranked well in evaluative studies of clustering methods (Lorr 1983).</a></p><p><a name="067a_107b">
+</a><a name="067a_107c"></a><a name="067a_107d"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <b>Ward's method:</b>
+ Ward's method is also known as the minimum variance method because it 
+joins at each stage the cluster pair whose merger minimizes the increase
+ in the total within-group error sum of squares, based on the Euclidean 
+distance between centroids. It tends to produce homogeneous clusters and
+ a symmetric hierarchy, and its definition of a cluster center of 
+gravity provides a useful way of representing a cluster. Tests have 
+shown it to be good at recovering cluster structure, though it is 
+sensitive to outliers and poor at recovering elongated clusters (Lorr 
+1983).</a></p><p><a name="067a_107d">
+Two other HACM are sometimes used, the <i>centroid</i> and <i>median</i>
+ methods. In the centroid method, each cluster as it is formed is 
+represented by the coordinates of a group centroid, and at each stage in
+ the clustering the pair of clusters with the most similar mean centroid
+ is merged. The median method is similar but the centroids of the two 
+merging clusters are not weighted proportionally to the size of the 
+clusters. A disadvantage of these two methods is that a newly formed 
+cluster may be more like some point than were its constituent points, 
+resulting in reversals or inversions in the cluster hierarchy.</a></p><p><a name="067a_107d">
+</a></p><p><a name="067a_107d">
+
+
+</a></p><p><a name="067a_107d">
+
+
+</a></p><p><a name="067a_107d">
+
+
+
+
+
+
+
+</a></p><h1><a name="067b_0001">16.4 ALGORITHMS FOR NONHIERARCHICAL METHODS</a><a name="067b_0001"></a></h1><p><a name="067b_0001">
+
+
+
+
+
+</a></p><h2><a name="067c_1081">16.4.1 Single Pass Methods</a><a name="067c_1081"></a></h2><p><a name="067c_1081">
+</a><a name="067c_107e"></a><a name="067c_107f"></a><a name="067c_1080">The
+ single pass method is particularly simple since it requires that the 
+data set be processed only once. The general algorithm is as follows:</a></p><p><a name="067c_1080">
+<b>1.     </b>Assign the first document <i>D</i><sub>1</sub> as the representative for <i>C</i><sub>1</sub><i><b>.</b></i></a></p><p><a name="067c_1080">
+<b>2.     </b>For <i>D<sub>i</sub><b>,</b></i> calculate the similarity <i>S</i> with the representative for each existing cluster.</a></p><p><a name="067c_1080">
+<b>3.     </b>If <i>S<sub>max</sub></i> is greater than a threshold value <i>S<sub>T</sub></i>, add the item to the corresponding cluster and recalculate the cluster representative; otherwise, use <i>D<sub>i</sub></i> to initiate a new cluster.</a></p><p><a name="067c_1080">
+<b>4.     </b>If an item <i>D<sub>i</sub></i> remains to be clustered, return to step 2.</a></p><p><a name="067c_1080">
+Though the single pass method has the advantage of simplicity, it is 
+often criticized for its tendency to produce large clusters early in the
+ clustering pass, and because the clusters formed are not independent of
+ the order in which the data set is processed. It is sometimes used to 
+form the groups that are used to initiate reallocation clustering. An 
+example of a single pass algorithm developed for document clustering is 
+the cover coefficient algorithm (Can and Ozkarahan 1984). In this 
+algorithm, a set of documents is selected as cluster seeds, and then 
+each document is assigned to the cluster seed that maximally covers it. 
+For <i>D<sub>i</sub></i>, the cover coefficient is a measure that incorporates the extent to which it is covered by <i>D<sub>j</sub></i> and the uniqueness of <i>D<sub>i</sub></i>, that is, the extent to which it is covered by itself.</a></p><p><a name="067c_1080">
+</a></p><p><a name="067c_1080">
+
+
+
+
+
+
+
+</a></p><h2><a name="067d_1083">16.4.2 Reallocation Methods</a><a name="067d_1083"></a></h2><p><a name="067d_1083">
+</a><a name="067d_1081">The reallocation methods operate by selecting 
+some initial partition of the data set and then moving items from 
+cluster to cluster to obtain an improved partition. Anderberg (1973) 
+discusses some of the criteria that have been suggested to establish an 
+initial partition and to monitor the improvement achieved by 
+reallocation. A general algorithm is:</a></p><p><a name="067d_1081">
+<b>1.     </b>Select <i>M</i> cluster representatives or centroids.</a></p><p><a name="067d_1081">
+<b>2.     </b>For <i>i</i> = 1 to <i><b>N</b></i>, assign <i>D<sub>i</sub></i> to the most similar centroid.</a></p><p><a name="067d_1081">
+<b>3.     </b>For <i>j</i> = 1 to <i>M</i>, recalculate the cluster centroid <i>C<sub>j</sub></i>.</a></p><p><a name="067d_1081">
+<b>4.     </b>Repeat steps 2 and 3 until there is little or no change in cluster membership during a pass through the file.</a></p><p><a name="067d_1081">
+</a><a name="067d_1082">The single pass and reallocation methods were 
+used in early work in cluster analysis in IR, such as the clustering 
+experiments carried out in the SMART project (Salton 1971). Their time 
+and storage requirements are much lower than those of the HACM and much 
+larger data sets could be processed. With improved processing capability
+ and more efficient hierarchical algorithms, the HACMs are now usually 
+preferred in practice, and the nonhierarchical methods will not be 
+considered further in this chapter.</a></p><p><a name="067d_1082">
+</a></p><p><a name="067d_1082">
+
+
+</a></p><p><a name="067d_1082">
+
+
+
+
+
+
+
+</a></p><h1><a name="067e_0001">16.5 ALGORITHMS FOR HIERARCHICAL METHODS</a><a name="067e_0001"></a></h1><p><a name="067e_0001">
+
+
+
+
+
+</a></p><h2><a name="067f_1086">16.5.1 General Algorithm for the HACM</a><a name="067f_1086"></a></h2><p><a name="067f_1086">
+</a><a name="067f_1083"></a><a name="067f_1084">All of the hierarchical agglomerative clustering methods can be described by a general algorithm:</a></p><p><a name="067f_1084">
+<b>1.     </b>Identify the two closest points and combine them in a cluster.</a></p><p><a name="067f_1084">
+<b>2.     </b>Identify and combine the next two closest points (treating existing clusters as points).</a></p><p><a name="067f_1084">
+<b>3.     </b>If more than one cluster remains, return to step 1.</a></p><p><a name="067f_1084">
+Individual HACM differ in the way in which the most similar pair is 
+defined, and in the means used to represent a cluster. Lance and 
+Williams (1966) proposed a general combinatorial formula, the 
+Lance-Williams dissimilarity update formula, for calculating 
+dissimilarities between new clusters and existing points, based on the 
+dissimilarities prior to formation of the new cluster. If objects <i>C<sub>i</sub></i> and <i>C<sub>j</sub></i> have just been merged to form cluster <i>C<sub>ij</sub></i>, the dissimilarity <i>d </i>between the new cluster and any existing cluster <i>C<sub>k</sub></i> is given by:</a></p><p><a name="067f_1084">
+<i>d<sub>Ci,j</sub>c<sub>k</sub> </i>= <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/alpha12.gif"><i><sub>i</sub>dc<sub>i</sub>c<sub>k</sub> </i>+ <i>a<sub>j</sub>dc<sub>j</sub>c<sub>k</sub> </i>+ <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/beta14.gif"><i>dc<sub>i</sub>c<sub>j</sub> </i>+ <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/gamma14.gif"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/sglvrt.gif"><i>dc<sub>i</sub>c<sub>k</sub></i> - <i>dc<sub>j</sub>c<sub>k</sub></i><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/sglvrt.gif"></a></p><p><a name="067f_1084">
+</a><a name="067f_1085">This formula can be modified to accomodate a variety of HACM by choice of the values of <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/alpha12.gif">, <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/beta14.gif">, and <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/gamma14.gif">.
+ The hierarchical clustering methods previously discussed are presented 
+in Table 16.1 in the context of their Lance-Williams parameters and 
+cluster centers.</a></p><p><a name="067f_1085">
+</a></p><h4><a name="067f_1087">Table 16.1: Characteristics of HACM</a><a name="067f_1087"></a></h4><p><a name="067f_1087">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/429_a.gif"></a></p><p><a name="067f_1087">
+</a></p><h4><a name="067f_1087">Notes: m<sub>i</sub> is the number of items in C<sub>i</sub>; the dissimilarity measure used for Ward's method must be the increase in variance (section 16.5.5).</a></h4><p><a name="067f_1087">
+There are three approaches to implementation of the general HACM 
+(Anderberg 1973), each of which has implications for the time and 
+storage requirements for processing. In the <i>stored matrix</i> approach, an <i>N</i> <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/mult.gif"> <i>N </i>matrix
+ containing all pairwise dissimilarity values is stored, and the 
+Lance-Williams update formula makes it possible to recalculate the 
+dissimilarity between cluster centers using only the stored values. The 
+time requirement is <i>O</i> (<i>N<b><sup>2</sup></b></i>), rising to <i>O</i> (<i>N<b><sup>3</sup></b></i>) if a simple serial scan of the similarity matrix is used; the storage requirement is <i>O </i>(<i>N<b><sup>2</sup></b></i>). A <i>stored data</i> approach has only an <i>O </i>(<i>N</i>) storage requirement but the need to recalculate the pairwise dissimilarity values for each fusion leads to an <i>O </i>(<i>N<b><sup>3</sup></b></i>) time requirement. In the <i>sorted</i> <i>matrix</i> approach, the dissimilarity matrix is calculated (<i>O </i>(<i><b>N</b></i><sup>2</sup>)) and then sorted (<i>O </i>(<i>N</i><sup>2 </sup><i>log</i> <i>N</i><sup>2</sup>)) prior to the construction of the hierarchy (<i>O </i>(<i>N</i><sup>2</sup>)).
+ The data set need not be stored and the similarity matrix is processed 
+serially, which minimizes disk accesses. However, this approach is 
+suitable only for the single link and complete link methods, which do 
+not require the recalculation of similarities during clustering.</a></p><p><a name="067f_1087">
+In addition to the general algorithm, there are also algorithms specific
+ to individual HACM. For some methods, algorithms have been developed 
+that are the optimal <i>O </i>(<i>N</i><sup>2</sup>) in time and <i>O </i>(<i>N</i>)
+ in space (Murtagh 1984). These include several algorithms for the 
+single link method, Defay's algorithm for complete link, and a 
+nearest-neighbor algorithm for Ward's method, all of which are discussed
+ below.</a></p><p><a name="067f_1087">
+</a></p><p><a name="067f_1087">
+
+
+
+
+
+
+
+</a></p><h2><a name="0680_1088">16.5.2 Single Link Method</a><a name="0680_1088"></a></h2><p><a name="0680_1088">
+</a><a name="0680_1086"></a><a name="0680_1087">The single link method 
+merges at each stage the closest previously unlinked pair of points in 
+the data set. Since the distance between two clusters is defined as the 
+distance between the closest pair of points each of which is in one of 
+the two clusters, no cluster centroid or representative is required, and
+ there is no need to recalculate the similarity matrix during 
+processing. This makes the method attractive both from a computational 
+and a storage perspective, and it also has desirable mathematical 
+properties (Jardine and Sibson 1971), so that it is one of the most 
+widely used of the HACM.</a></p><p><a name="0680_1087">
+A number of algorithms for the single link method have been reviewed by 
+Rohlf (1982), including related minimal spanning tree algorithms. The 
+computational requirements range from <i>O </i>(<i>NlogN</i>) to <i>O </i>(<i>N<sup>5</sup></i>). Many of these algorithms are not suitable for information retrieval applications where the data sets have large <i>N </i>and
+ high dimensionality. The single link algorithms discussed below are 
+those that have been found most useful for information retrieval.</a></p><p><a name="0680_1087">
+
+
+
+
+
+</a></p><h3><a name="0680_1087">Van Rijsbergen algorithm</a></h3><p><a name="0680_1087">
+</a><a name="0681_1088"></a><a name="0681_1089">Van Rijsbergen (1971) 
+developed an algorithm to generate the single link hierarchy that 
+allowed the similarity values to be presented in any order and therefore
+ did not require the storage of the similarity matrix. It is <i>O </i>(<i>N<sup>2</sup></i>) in time and <i>O </i>(<i>N</i>)
+ in storage requirements. It generates the hierarchy in the form of a 
+data structure that both facilitates searching and is easily updated, 
+and was the first to be applied to a relatively large collection of 
+11,613 documents (Croft 1977). However, most later work with large 
+collections has used either the SLINK or Prim-Dijkstra algorithm, which 
+are quite simple to implement.</a></p><p><a name="0681_1089">
+</a></p><p><a name="0681_1089">
+
+
+
+
+
+
+
+</a></p><h3><a name="0681_1089">SLINK algorithm</a></h3><p><a name="0681_1089">
+</a><a name="0682_108a"></a><a name="0682_108b">The SLINK algorithm (Sibson 1973) is optimally efficient, <i>O </i>(<i>N</i><sup>2</sup>) for computation and <i>O </i>(<i>N</i>)
+ for time, and therefore suitable for large data sets. It is simply a 
+sequence of operations by which a representation of the single link 
+hierarchy can be recursively updated; the dendrogram is built by 
+inserting one point at a time into the representation.</a></p><p><a name="0682_108b">
+The hierarchy is generated in a form known as the <i>pointer representation</i>, which consists of two functions <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/piuc.gif"> and <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/lambdauc.gif"> for a data set numbered 1..<i>N</i>, with the following conditions:</a></p><p><a name="0682_108b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/piuc.gif">(<i>N</i>) = <i>N</i></a></p><p><a name="0682_108b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/piuc.gif">(<i>i</i>) &gt; <i>i</i></a></p><p><a name="0682_108b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/lambdauc.gif">(<i>N</i>) = <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/infin.gif"></a></p><p><a name="0682_108b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/dot12.gif">     <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/lambdauc.gif">(<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/piuc.gif">(<i>i</i>)) &gt; <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/lambdauc.gif">(<i>i</i>) for <i>i</i> &lt; <i>N</i></a></p><p><a name="0682_108b">
+In simple terms, <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/lambdauc.gif">(<i>i</i>) is the lowest level (distance or dissimilarity) at which <i>i</i> is no longer the last (i.e., the highest numbered) object in its cluster, and <img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/piuc.gif"> (<i>i</i>)
+ is the last object in the cluster it joins at this level; a 
+mathematical definition for these parameters is provided by Sibson 
+(1973).</a></p><p><a name="0682_108b">
+Fortran code for SLINK is provided in the original paper (Sibson 1973). In the pseudocode below, three arrays of dimension <i>N</i> are used: <i>pi</i> (to hold the pointer representation), <i>lambda</i> (to hold the distance value associated with each pointer), and <i>distance</i> (to process the current row of the distance matrix); <i>next</i> indicates the current pointer for a point being examined.</a></p><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">/* initialize pi and lambda for a single point representation */</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">pi [0] = 0;</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">lambda[0] = MAXINT;</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">/*iteratively add the remaining N-1 points to the hierarchy */</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">for (i = 1; i &lt; N; i++)</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">{</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">pi [i] = i;</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">lambda[i] = MAXINT;</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">/* calculate and store a row of the distance matrix for i */</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">for (j = 0; j &lt; i-1; j++) distance[j] =calc_distance(i,j);</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">for (j = 0; j &lt; i-1; j++)</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">{</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">next = pi[j];</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">if (lambda[j] &lt; distance[j])</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">distance[next] = min(distance[next],distance[j]);</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">else</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">{</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">distance[next] = min(lambda[j],distance[next]);</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">pi[j] = i;</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">lambda[j] = distance[j];</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">}</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">}</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">/* relabel clusters if necessary */</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">for (j = 0; j &lt;i-1; j++)</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">{</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">next = pi  [j];</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">if (lambda[next] &lt; lambda [j])</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">pi[j] = i;</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">}</a></pre><p><a name="0682_108b">
+</a></p><pre><a name="0682_108b">}</a></pre><p><a name="0682_108b">
+For output in the form of a dendrogram, the pointer representation can be converted into the <i>packed representation</i>. This can be accomplished in <i>O (N</i><sup>2</sup>) time (with a small coefficient for <i>N</i><sup>2</sup>) and <i>O (N</i>) space. A FORTRAN subroutine to effect the transformation is provided in Sibson's original paper.</a></p><p><a name="0682_108b">
+</a></p><p><a name="0682_108b">
+
+
+
+
+
+
+
+</a></p><h3><a name="0682_108b">Minimal spanning tree algorithms</a></h3><p><a name="0682_108b">
+</a><a name="0683_108c"></a><a name="0683_108d">A minimal spanning tree (MST) is a tree linking <i>N</i> objects with <i>N</i> - 1 connections so that there are no loops and the sum of the <i>N</i>
+ - 1 dissimilarities is minimized. It can be shown that all the 
+information required to generate a single link hierarchy for a set of 
+points is contained in their MST (Gower and Ross 1969). Once an MST has 
+been constructed, the corresponding single link hierarchy can be 
+generated in <i>O (N</i><sup>2</sup>) operations; or the data structures for the MST can be modified so that the hierarchy can be built simultaneously (Rohlf 1982).</a></p><p><a name="0683_108d">
+Two fundamental construction principles for MSTs are:</a></p><p><a name="0683_108d">
+<b>1.     </b>Any isolated point can be connected to a nearest neighbor.</a></p><p><a name="0683_108d">
+<b>2.     </b>Any isolated fragment (subset of an MST) can be connected to a nearest neighbor by a shortest available link.</a></p><p><a name="0683_108d">
+</a><a name="0683_108e">The Prim-Dijkstra algorithm (Dijkstra 1976) consists of a single application of principle 1, followed by <i>N</i> - 1 iterations of principle 2, so that the MST is grown by enlarging a single fragment:</a></p><p><a name="0683_108e">
+<b>1.     </b>Place an arbitrary point in the MST and connect its nearest neighbor to it.</a></p><p><a name="0683_108e">
+<b>2.     </b>Find the point not in the MST closest to any point in the MST and add it to the fragment.</a></p><p><a name="0683_108e">
+<b>3.     </b>If a point remains that is not in the fragment, return to step 2.</a></p><p><a name="0683_108e">
+The algorithm requires <i>O (N</i><sup>2</sup>) time if, for each point 
+not in the fragment, the identity and distance to its nearest neighbor 
+in the fragment is stored. As each new point is added to the fragment, 
+the distance from that point to each point not in the fragment is 
+calculated, and the NN information is updated if necessary. Since the 
+dissimilarity matrix need not be stored, the storage requirement is <i>O (N</i>).</a></p><p><a name="0683_108e">
+A FORTRAN version of the Prim-Dijkstra algorithm is provided by Whitney (1972). The algorithm here uses arrays <i>npoint</i> and <i>ndistance </i>to hold information on the nearest in-tree neighbor for each point, and <i>notintree</i> is a list of the <i>nt</i> unconnected points. <i>Lastpoint</i> is the latest point added to the tree.</a></p><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/*  initialize lists */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">for (i = 0; i &lt; n; i++)</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">{</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">ndistance[i] = MAXINT;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">notintree[i] = i;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">}</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/* arbitrarily place the Nth point in the MST */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">lastpoint = n;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">nt = n-1;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/*  grow the tree an object at a time */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">for ( i = 0; i &lt; n-1;i++)</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">{</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/*consider the lastpoint in the tree for the NN list */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">for (j = 0; j &lt; nt; j++)</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">{</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">D = calculate_distance(lastpoint, notintree[j]);</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">if  (D &lt; ndistance[j]</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">{</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">npoint[j] =lastpoint;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">ndistance[j] = D;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">}</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">}</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/* find the unconnected point closest to a point in the     */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/* tree                                                     */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">nj = index_of_min(ndistance);</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/* add this point to the MST; store this point and their    */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/* clustering level                                         */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">lastpoint = notintree[nj];</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">store_in_MST ( lastpoint, npoint[nj], ndistance[nj]);</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/* remove lastpoint from notintree list;  */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">/* close up npoint and ndistance lists    */</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">notintree[nj] = nt;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">npoint[nj] = npoint[nt];</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">ndistance[nj] =ndistance[nt];</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">nt = nt - 1;</a></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">}</a></pre><p><a name="0683_108e">
+</a></p><pre></pre><p><a name="0683_108e">
+</a></p><pre><a name="0683_108e">}</a></pre><p><a name="0683_108e">
+</a></p><p><a name="0683_108e">
+
+
+</a></p><p><a name="0683_108e">
+
+
+
+
+
+
+
+</a></p><h2><a name="0684_1091">16.5.3 Complete Link Method</a><a name="0684_1091"></a></h2><p><a name="0684_1091">
+</a><a name="0684_108f"></a><a name="0684_1090">The small, tightly bound
+ clusters typical of the complete link method have performed well in 
+comparative studies of document retrieval (Voorhees 1986a). 
+Unfortunately, it is difficult to apply to large data sets since there 
+does not seem to be an algorithm more effective than the stored data or 
+stored matrix approach to the general HACM algorithm.</a></p><p><a name="0684_1090">
+
+
+
+
+
+</a></p><h3><a name="0684_1090">Defays' CLINK algorithm</a></h3><p><a name="0684_1090">
+</a><a name="0685_1091"></a><a name="0685_1092"></a><a name="0685_1093"></a><a name="0685_1094">The
+ best-known algorithm for implementing the complete link method is the 
+CLINK algorithm developed by Defays (1977). It is presented in a form 
+analogous to the SLINK algorithm, uses the same three arrays (<i>pi, lambda,</i> and <i>distance</i>),
+ and like SLINK, produces output in the form of the pointer 
+representation. Defays presents a CLINK subroutine which allows his 
+algorithm to be incorporated into Sibson's original FORTRAN program for 
+SLINK. CLINK is efficient, requiring <i>O (N</i><sup>2</sup>) time, <i>O (N</i>)
+ space, but it does not seem to generate an exact hierarchy and has 
+given unsatisfactory results in some information retrieval experiments 
+(El-Hamdouchi and Willett 1989).</a></p><p><a name="0685_1094">
+</a></p><p><a name="0685_1094">
+
+
+
+
+
+
+
+</a></p><h3><a name="0685_1094">Voorhees algorithm</a></h3><p><a name="0685_1094">
+</a><a name="0686_1095"></a><a name="0686_1096"></a><a name="0686_1097">The
+ Voorhees algorithm (1986b) for the complete link method has been used 
+to cluster relatively large document collections with better retrieval 
+results than the CLINK algorithm (El-Hamdouchi and Willett 1989). It is a
+ variation on the sorted matrix approach, and is based on the fact that 
+if the similarities between all pairs of documents are processed in 
+descending order, two clusters of size <i>m<sub>i</sub></i> and <i>m<sub>j</sub></i> can be merged as soon as the <i>m<sub>i</sub></i> <font face="Times New Roman" size="3"><img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/mult.gif"></font> <i>m<sub>i</sub></i>th
+ similarity of documents in the respective clusters is reached. This 
+requires a sorted list of document-document similarities, and a means of
+ counting the number of similarities seen between any two active 
+clusters. The large number of zero-valued similarities in a typical 
+document collection make it more efficient than its worst case <i>O (N</i><sup>3</sup>) time, <i>O (N</i><sup>2</sup>)
+ storage requirement would suggest; however it is still very demanding 
+of resources, and El-Hamdouchi and Willett found it impractical to apply
+ it to the largest of the collections they studied.</a></p><p><a name="0686_1097">
+</a></p><p><a name="0686_1097">
+
+
+</a></p><p><a name="0686_1097">
+
+
+
+
+
+
+
+</a></p><h2><a name="0687_109a">16.5.4 Group Average Link Method</a><a name="0687_109a"></a></h2><p><a name="0687_109a">
+</a><a name="0687_1098"></a><a name="0687_1099">Because the similarity 
+between two clusters is determined by the average value of all the 
+pairwise links between points for which each is in one of the two 
+clusters, no general <i>O (N</i><sup>2</sup>) time, <i>O (N</i>) space algorithm is known. The general HACM algorithm can be used, but with <i>O (N</i><sup>3</sup>) time for the stored data approach and <i>O (N</i><sup>2</sup>)
+ storage for the stored matrix approach, implementation may be 
+impractical for a large collection. However, a more efficient special 
+case algorithm is available.</a></p><p><a name="0687_1099">
+
+
+
+
+
+</a></p><h3><a name="0687_1099">Voorhees algorithm</a></h3><p><a name="0687_1099">
+Voorhees (1986b) has pointed out that the group average link hierarchy can be constructed in <i>O (N</i><sup>2</sup>) time, <i>O (N</i>)
+ space if the similarity between documents chosen is the inner product 
+of two vectors using appropriately weighted vectors. In this case, the 
+similarity between a cluster centroid and any document is equal to the 
+mean similarity between the document and all the documents in the 
+cluster. Since the centroid of the cluster is the mean of all the 
+document vectors, the centroids can be used to compute the similarities 
+between the clusters while requiring only <i>O</i>(<i>N</i>) space. 
+Voorhees was able to cluster a document collection of 12,684 items using
+ this algorithm, for which she provides pseudocode.</a></p><p><a name="0687_1099">
+Using Voorhees' weighting scheme and intercentroid similarity, 
+El-Hamdouchi (1987) was able to implement the group average link method 
+using the reciprocal nearest neighbor algorithm described below for 
+Ward's method.</a></p><p><a name="0687_1099">
+</a></p><p><a name="0687_1099">
+
+
+</a></p><p><a name="0687_1099">
+
+
+
+
+
+
+
+</a></p><h2><a name="0689_109c">16.5.5 Ward's Method</a><a name="0689_109c"></a></h2><p><a name="0689_109c">
+</a><a name="0689_109a"></a><a name="0689_109b">Ward's method (Ward 
+1963; Ward and Hook 1963) follows the general algorithm for the HACM, 
+where the object/cluster pair joined at each stage is the one whose 
+merger minimizes the increase in the total within-group squared 
+deviation about the means, or variance. When two points <i>D<sub>i</sub></i> and <i>D<sub>j</sub></i> are clustered, the increase in variance <i>I<sub>ij</sub></i> is given by:</a></p><p><a name="0689_109b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/435_a.gif"></a></p><p><a name="0689_109b">
+where <i>m<sub>i</sub></i> is the number of objects in <i>D<sub>i</sub></i> and <i>d</i><sup>2</sup><i><sub>ij</sub></i> is the squared Euclidean distance, given by:</a></p><p><a name="0689_109b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/435_b.gif"></a></p><p><a name="0689_109b">
+where <i>D<sub>i</sub></i> is represented by a vector (<i>x<sub>i</sub></i>1, <i>x<sub>i</sub></i>2, . . . , <i>x<sub>iL</sub></i>) in <i>L</i>-dimensional space. The cluster center for a pair of points <i>D<sub>i</sub></i> and <i>D<sub>j</sub></i> is given by:</a></p><p><a name="0689_109b">
+<img src="Information%20Retrieval:%20CHAPTER%2016:%20CLUSTERING%20ALGORITHMS_files/435_c.gif"></a></p><p><a name="0689_109b">
+
+
+
+
+
+</a></p><h3><a name="0689_109b">Reciprocal nearest neighbor algorithm</a></h3><p><a name="0689_109b">
+</a><a name="068a_109c"></a><a name="068a_109d">The mathematical 
+properties of Ward's method make it a suitable candidate for a 
+reciprocal nearest neighbor (RNN) algorithm (Murtaugh 1983, 1985). For 
+any point or cluster, there exists a chain of nearest neighbors (NNs) so
+ that</a></p><p><a name="068a_109d">
+</a></p><pre><a name="068a_109d">NN(i) = j; NN(j) = k; ...; NN(p) = q; NN(q) = p</a></pre><p><a name="068a_109d">
+The chain must end in some pair of objects that are RNNs, since the 
+interobject distances are monotonically decreasing along the chain (ties
+ must be arbitrarily resolved).</a></p><p><a name="068a_109d">
+An efficient clustering algorithm can be based on the process of following a chain of nearest neighbors:</a></p><p><a name="068a_109d">
+<b>1.     </b>Select an arbitrary point.</a></p><p><a name="068a_109d">
+<b>2.     </b>Follow the NN chain from this point till an RNN pair is found.</a></p><p><a name="068a_109d">
+<b>3.     </b>Merge these two points and replace them with a single point.</a></p><p><a name="068a_109d">
+<b>4.     </b>If there is a point in the NN chain preceding the merged 
+points, return to step 2; otherwise return to step 1. Stop when only one
+ point remains.</a></p><p><a name="068a_109d">
+This algorithm requires <i>O</i>(<i>N</i><sup>2</sup>) computation but only <i>O</i>(<i>N</i>)
+ storage. It carries out agglomerations in restricted spatial regions, 
+rather than in strict order of increasing dissimilarity, but still 
+results (for Ward's method) in a hierarchy that is unique and exact. 
+This is designated the Single Cluster Algorithm since it carries out one
+ agglomeration per iteration; a Multiple Cluster Algorithm, suitable for
+ parallel processing, has also been proposed (Murtagh 1985).</a></p><p><a name="068a_109d">
+</a></p><p><a name="068a_109d">
+
+
+</a></p><p><a name="068a_109d">
+
+
+</a></p><p><a name="068a_109d">
+
+
+
+
+
+
+
+</a></p><h1><a name="068b_0001">16.6 EVALUATION AND VALIDATION</a><a name="068b_0001"></a></h1><p><a name="068b_0001">
+As Dubes and Jain (1980, p. 179) point out:</a></p><p><a name="068b_0001">
+The thoughtful user of a clustering method or algorithm must answer two 
+questions: (i) Which clustering method is appropriate for a particular 
+data set? (ii) How does one determine whether the results of a 
+clustering method truly characterize the data?</a></p><p><a name="068b_0001">
+These are important questions because any clustering method will produce
+ a set of clusters, and results are sought which reflect some "natural" 
+grouping rather than one that arises as an artifact of the method. The 
+answer to the first question can be found in evaluative studies of 
+clustering methods, and to the second question, in validation techniques
+ for clustering solutions.</a></p><p><a name="068b_0001">
+
+
+
+
+
+</a></p><h2><a name="068c_109f">16.6.1 Evaluation</a><a name="068c_109f"></a></h2><p><a name="068c_109f">
+</a><a name="068c_109e">Many evaluative studies have attempted to 
+determine the "best" clustering method (Lorr 1983) by applying a range 
+of clustering methods to test data sets and comparing the quality of the
+ results, for example by using artificially created data structures, or 
+comparing the cluster results to a classification established by experts
+ in the field. Even under laboratory conditions it is difficult to 
+evaluate clustering methods, since each method has different properties 
+and strengths. The results of these studies do not suggest a single best
+ method, though Ward's method, and in more recent studies, the group 
+average method, have performed well. It is usually advisable to apply 
+more than one clustering method and use some validation method to check 
+the reliability of the resulting cluster structure.</a></p><p><a name="068c_109e">
+For retrieval purposes, the "best" method for clustering a document 
+collection is that which provides the most effective retrieval in 
+response to a query. Several evaluative studies have taken this 
+approach, using standard test collections of documents and queries. Most
+ of the early work used approximate clustering methods, or the least 
+demanding of the HACM, the single link method, a restriction imposed by 
+limited processing resources. However, two recent studies are noteworthy
+ for their use of relatively large document collections for the 
+evaluation of a variety of HACM (El-Hamdouchi and Willett 1989; Voorhees
+ 1986a). Voorhees compared single link, complete link, and group average
+ methods, using document collections of up to 12,684 items, while 
+El-Hamdouchi and Willett compared these three methods plus Ward's method
+ on document collections of up to 27,361 items. Voorhees found complete 
+link most effective for larger collections, with complete and group 
+average link comparable for smaller collections; single link hierarchies
+ provided the worst retrieval performance. El-Hamdouchi and Willett 
+found group average most suitable for document clustering. Complete link
+ was not as effective as in the Voorhees study, though this may be 
+attributed to use of Defays' CLINK algorithm. As noted in section 
+16.8.1, there are several ways in which retrieval from a clustered 
+document collection can be performed, making comparisons difficult when 
+using retrieval as an evaluative tool for clustering methods.</a></p><p><a name="068c_109e">
+</a></p><p><a name="068c_109e">
+
+
+
+
+
+
+
+</a></p><h2><a name="068d_10a4">16.6.2 Validation</a><a name="068d_10a4"></a></h2><p><a name="068d_10a4">
+</a><a name="068d_109f">Cluster validity procedures are used to verify 
+whether the data structure produced by the clustering method can be used
+ to provide statistical evidence of the phenomenon under study. Dubes 
+and Jain (1980) survey the approaches that have been used, categorizing 
+them on their ability to answer four questions: is the data matrix 
+random? how well does a hierarchy fit a proximity matrix? is a partition
+ valid? and which individual clusters appearing in a hierarchy are 
+valid? Willett (1988) has reviewed the application of validation methods
+ to clustering of document collections, primarily the application of the
+ random graph hypothesis and the use of distortion measures.</a></p><p><a name="068d_109f">
+</a><a name="068d_10a0"></a><a name="068d_10a1"></a><a name="068d_10a2">An approach that is carried out prior to clustering is also potentially useful. Tests for <i>clustering tendency</i>
+ attempt to determine whether worthwhile retrieval performance would be 
+achieved by clustering a data set, before investing the computational 
+resources which clustering the data set would entail. El-Hamdouchi and 
+Willett (1987) describe three such tests. The <i>overlap test</i> is 
+applied to a set of documents for which query-relevance judgments are 
+available. All the relevant-relevant (RR) and relevant-nonrelevant (RNR)
+ interdocument similarities are calculated for a given query, and the 
+overlap (the fraction of the RR and RNR distributions that is common to 
+both) is calculated. Collections with a low overlap value are expected 
+to be better suited to clustering than those with high overlap values. 
+Voorhees' <i>nearest neighbor test</i> considers, for each relevant document for a query, how many of its <i>n </i>nearest
+ neighbors are also relevant; by averaging over all relevant documents 
+for all queries in a test colleciton, a single indicator for a 
+collection can be obtained. The <i>density test</i> is defined as the 
+total number of postings in the document collection divided by the 
+product of the number of documents and the number of terms that have 
+been used for the indexing of those documents. It is particularly useful
+ because it does not require any predetermined query-relevance data or 
+any calculation of interdocument similarities. Of the three tests, the 
+density test provided the best indication of actual retrieval 
+performance from a clustered data set.</a></p><p><a name="068d_10a2">
+</a><a name="068d_10a3">The goal of a hierarchical clustering process may be to partition the data set into some unknown number of clusters <i>M</i>
+ (which may be visualized as drawing a horizontal line across the 
+dendrogram at some clustering level). This requires the application of a
+ <i>stopping rule</i>, a statistical test to predict the clustering level that will determine <i>M</i>.
+ Milligan and Cooper (1985) evaluated and ranked 30 such rules, one or 
+more of which is usually present in a software package for cluster 
+analysis (though not necessarily those ranked highest by Milligan and 
+Cooper).</a></p><p><a name="068d_10a3">
+</a></p><p><a name="068d_10a3">
+
+
+</a></p><p><a name="068d_10a3">
+
+
+
+
+
+
+
+</a></p><h1><a name="068e_10aa">16.7 UPDATING THE CLUSTER STRUCTURE</a><a name="068e_10aa"></a></h1><p><a name="068e_10aa">
+</a><a name="068e_10a4"></a><a name="068e_10a5"></a><a name="068e_10a6"></a><a name="068e_10a7"></a><a name="068e_10a8"></a><a name="068e_10a9">In
+ many information retrieval environments, the collection is dynamic, 
+with new items being added on a regular basis, and, less frequently, old
+ items withdrawn. Since clustering a large data set is 
+resource-intensive, some mechanism for updating the cluster structure 
+without the need to recluster the entire collection is desirable. 
+Relatively little work has been done on methods for cluster maintenance 
+(Can and Ozkarahan 1989), particularly for the hierarchical methods. In 
+certain cases, update of the cluster structure is implicit in the 
+clustering algorithm. This is true of both the van Rijsbergen and SLINK 
+algorithms for the single link method, and the CLINK algorithm for the 
+complete link method, all of which operate by iteratively inserting a 
+document into an existing hierarchy.</a></p><p><a name="068e_10a9">
+Where the application uses a partitioned data set (from a 
+nonhierarchical or hierarchical method), new items may simply be added 
+to the most similar partition until the cluster structure becomes 
+distorted and it is necessary to regenerate it. For a few methods, 
+cluster update has been specifically incorporated. Crouch's reallocation
+ algorithm includes a mechanism for cluster maintenance (Crouch 1975). 
+Can and Ozkarahan (1989) review the approaches that have been taken for 
+cluster maintenance and propose a strategy for dynamic cluster 
+maintenance based on their cover coefficient concept.</a></p><p><a name="068e_10a9">
+</a></p><p><a name="068e_10a9">
+
+
+
+
+
+
+
+</a></p><h1><a name="068f_10ac">16.8 DOCUMENT RETRIEVAL FROM A CLUSTERED DATA SET</a><a name="068f_10ac"></a></h1><p><a name="068f_10ac">
+</a><a name="068f_10aa"></a><a name="068f_10ab">Document clustering has 
+been studied because of its potential for improving the efficiency of 
+retrieval, for improving the effectiveness of retrieval, and because it 
+provides an alternative to Boolean or best match retrieval. Initially 
+the emphasis was on efficiency: document collections were partitioned, 
+using nonhierarchical methods, and queries were matched against cluster 
+centroids, which reduced the number of query-document comparisons that 
+were necessary in a serial search. Studies of retrieval from partitioned
+ document collections showed that though retrieval efficiency was 
+achieved, there was a decrease in retrieval effectiveness (Salton 1971).
+ Subsequent study has concentrated on the effectiveness of retrieval 
+from hierarchically clustered document collections, based on the <i>cluster hypothesis</i>,
+ which states that associations between documents convey information 
+about the relevance of documents to requests (van Rijsbergen 1979).</a></p><p><a name="068f_10ab">
+
+
+
+
+
+</a></p><h2><a name="0690_10b3">16.8.1 Approaches to Retrieval</a><a name="0690_10b3"></a></h2><p><a name="0690_10b3">
+</a><a name="0690_10ac"></a><a name="0690_10ad"></a><a name="0690_10ae"></a><a name="0690_10af">There are several ways in which a query can be matched against the documents in a hierarchy (Willett 1988). A <i>top-down search</i>
+ involves entering the tree at the root and matching the query against 
+the cluster at each node, moving down the tree following the path of 
+greater similarity. The search is terminated according to some 
+criterion, for instance when the cluster size drops below the number of 
+documents desired, or when the query-cluster similarity begins to 
+decrease. A single cluster is retrieved when the search is terminated. 
+Since it is difficult to adequately represent the clusters in the very 
+large top-level clusters, a useful modification is to eliminate the 
+top-level clusters by applying a threshold clustering level to the 
+hierarchy to obtain a partition, and using the best of these mid-level 
+clusters as the starting point for the top-down search. The top-down 
+strategy has been shown to work well with the complete link method 
+(Voorhees 1986a).</a></p><p><a name="0690_10af">
+</a><a name="0690_10b0"></a><a name="0690_10b1">A <i>bottom-up search</i>
+ begins with some document or cluster at the base of the tree and moves 
+up until the retrieval criterion is satisfied; the beginning document 
+may be an item known to be relevant prior to the search, or it can be 
+obtained by a best match search of documents or lowest-level clusters. 
+Comparative studies suggest that the bottom-up search gives the best 
+results (apart from the complete link method), particularly when the 
+search is limited to the bottom-level clusters (Willett 1988). Output 
+may be based on retrieval of a single cluster, or the top-ranking 
+clusters may be retrieved to produce a predetermined number of either 
+documents or clusters; in the latter case, the documents retrieved may 
+themselves be ranked against the query.</a></p><p><a name="0690_10b1">
+</a><a name="0690_10b2">A simple retrieval mechanism is based on <i>nearest neighbor clusters</i>,
+ that is, retrieving a document and that document most similar to it. 
+Griffiths et al. (1984) determined that for a variety of test 
+collections, search performance comparable to or better than that 
+obtainable from nonclustered collections could be obtained using this 
+method.</a></p><p><a name="0690_10b2">
+</a></p><p><a name="0690_10b2">
+
+
+
+
+
+
+
+</a></p><h2><a name="0691_10b5">16.8.2 Cluster Representatives</a><a name="0691_10b5"></a></h2><p><a name="0691_10b5">
+</a><a name="0691_10b3"></a><a name="0691_10b4">A centroid or cluster 
+representative is a record that is used to represent the characteristics
+ of the documents in a cluster. It is required in retrieval so that the 
+degree of similarity between a query and a cluster can be determined; it
+ is also needed in the nonhierarchical methods where document-cluster 
+similarity must be determined in order to add documents to the most 
+similar cluster. Ranks or frequencies have been used to weight terms in 
+the representative; usually a threshold is applied to eliminate less 
+significant terms and shorten the cluster representative. A binary 
+representative may also be used, for example including a term if it 
+occurs in more than <i>log<sub>2</sub>m</i> documents in the cluster (Jardine and van Rijsbergen 1971).</a></p><p><a name="0691_10b4">
+</a></p><p><a name="0691_10b4">
+
+
+</a></p><p><a name="0691_10b4">
+
+
+
+
+
+
+
+</a></p><h1><a name="0692_0001">16.9 CONCLUSION</a><a name="0692_0001"></a></h1><p><a name="0692_0001">
+Cluster analysis is an effective technique for structuring a data set, 
+and a wide choice of methods and algorithms exists. It is important to 
+consider the questions raised in section 16.1.2 regarding the potential 
+application, selection of methods and algorithm and the parameters 
+associated with it, and evaluation and validation of the results. Much 
+of the work to date in cluster analysis has been limited by the 
+considerable resources required by clustering, and only recently have 
+results from relatively large-scale clustering become available.</a></p><p><a name="0692_0001">
+</a></p><p><a name="0692_0001">
+
+
+
+
+
+
+
+</a></p><h1><a name="0693_0001">REFERENCES</a><a name="0693_0001"></a></h1><p><a name="0693_0001">
+ALDENDERFER, M. S., and R. K. BLASHFIELD. 1984. <i>Cluster Analysis</i>. Beverly Hills: Sage.</a></p><p><a name="0693_0001">
+ANDERBERG, M. R., 1973. <i>Cluster Analysis for Applications</i>. New York: Academic.</a></p><p><a name="0693_0001">
+BENTLEY, J. L., B. W. WEIDE, and A. C. YAO. 1980. "Optimal Expected-Time Algorithms for Closest Point Problems." <i>ACM Transactions on Mathematical Software</i>, 6, 563-80.</a></p><p><a name="0693_0001">
+BLASHFIELD, R. K., and M. S. ALDENDERFER. 1978. "The Literature on Cluster Analysis." <i>Multivariate Behavioral Research</i>, 13, 271-95.</a></p><p><a name="0693_0001">
+CAN, F., and E. A. OZKARAHAN. 1984. "Two Partitioning Type Clustering Algorithms." <i>J. American Society for Information Science</i>, 35, 268-76.</a></p><p><a name="0693_0001">
+CAN, F., and E. A. OZKARAHAN. 1989. "Dynamic Cluster Maintenance." <i>Information Processing &amp; Management</i>, 25, 275-91.</a></p><p><a name="0693_0001">
+CROFT, W. B. 1977. "Clustering Large Files of Documents Using the Single-Link Method." <i>J. American Society for Information Science</i>, 28, 341-44.</a></p><p><a name="0693_0001">
+CROUCH, C. J. 1988. "A Cluster-Based Approach to Thesaurus Construction" in <i>11th International Conference on Research and Development in Information Retrieval</i>, New York: ACM, 309-20.</a></p><p><a name="0693_0001">
+CROUCH, D. B. 1975. "A File Organization and Maintenance Procedure for Dynamic Document Collections." <i>Information Processing &amp; Management</i>, 11, 11-21.</a></p><p><a name="0693_0001">
+DEFAYS, D. 1977. "AEfficient n Algorithm for a Complete Link Method." <i>Computer Journal</i>, 20, 364-66.</a></p><p><a name="0693_0001">
+DIJKSTRA, E. W. 1976. "The Problem of the Shortest Subspanning Tree." <i>A Discipline of Programming</i>. Englewood Cliffs, N.J.: Prentice Hall, 154-60.</a></p><p><a name="0693_0001">
+DUBES, R., and A. K. JAIN. 1980. "Clustering Methodologies in Exploratory Data Analysis." <i>Advances in Computers</i>, 19, 113-227.</a></p><p><a name="0693_0001">
+EL-HAMDOUCHI, A. 1987. <i>The Use of Inter-Document Relationships in Information Retrieval</i>. Ph.D. thesis, University of Sherfield.</a></p><p><a name="0693_0001">
+EL-HAMDOUCHI, A., and P. WILLETT. 1987. "Techniques for the Measurement of Clustering Tendency in Document Retrieval Systems." <i>J. Information Science</i>, 13, 361-65.</a></p><p><a name="0693_0001">
+EL-HAMDOUCHI, A., and P. WILLETT. 1989. "Comparison of hierarchic agglomerative clustering methods for document retrieval." <i>Computer Journal</i>, 32, 220-227.</a></p><p><a name="0693_0001">
+EVERITT, B. 1980. <i>Cluster Analysis</i>, 2nd ed. New York: Halsted.</a></p><p><a name="0693_0001">
+GORDON, A. D. 1987. "A Review of Hierarchical Classification." <i>J. Royal Statistical Society</i>, <i>Series A</i>, 150(2), 119-37.</a></p><p><a name="0693_0001">
+GOWER, J. C., and G. J. S. ROSS. 1969. "Minimum Spanning Trees and Single Linkage Cluster Analysis." <i>Applied Statistics</i>, 18, 54-64.</a></p><p><a name="0693_0001">
+GRIFFITHS, A., L . A. ROBINSON, and P. WILLETT. 1984. "Hierarchic 
+Agglomerative Clustering Methods for Automatic Document Classification."
+ <i>J. Documentation</i>, 40, 175-205.</a></p><p><a name="0693_0001">
+HARTIGAN, J. A. 1975. <i>Clustering Algorithms</i>. New York: Wiley.</a></p><p><a name="0693_0001">
+HUDSON, H. C., and ASSOCIATES. 1983. <i>Classifying Social Data: New Applications of Analytical Methods for Social Science Research</i>. San Francisco: Jossey-Bass.</a></p><p><a name="0693_0001">
+JAIN, A. K., and R. C. DUBES. 1988. <i>Algorithms for Clustering Data</i>. Englewood Cliffs, N.J.: Prentice Hall.</a></p><p><a name="0693_0001">
+JARDINE, N., and R. SIBSON. 1971. <i>Mathematical Taxonomy</i>. London: Wiley.</a></p><p><a name="0693_0001">
+JARDINE, N., and C. J. VAN RIJSBERGEN. 1971. "The Use of Hierarchic Clustering in Information Retrieval." <i>Information Storage and Retrieval</i>, 7, 217-40.</a></p><p><a name="0693_0001">
+KAUFMAN, L. 1990. <i>Finding Groups in Data: An Introduction to Cluster Analysis</i>. New York: Wiley.</a></p><p><a name="0693_0001">
+LANCE, G. N., and W. T. WILLIAMS. 1966. "A General Theory of Classificatory Sorting Strategies. 1 . Hierarchical systems." <i>Computer Journal</i>, 9, 373-80.</a></p><p><a name="0693_0001">
+LEE, R. C. T. 1981. "Clustering Analysis and Its Applications." <i>Advances in Information Systems Science</i>, 8, 169-292.</a></p><p><a name="0693_0001">
+LORR, M. 1983. <i>Cluster Analysis for Social Scientists: Techniques for Analyzing and Simplifying Complex Blocks of Data</i>. San Francisco: Jossey-Bass.</a></p><p><a name="0693_0001">
+MILLIGAN, G. W., and M. C. COOPER. 1985. "An Examination of Procedures for Determining the Number of Clusters in a Data Set." <i>Psychometrika</i>, 50, 159-79.</a></p><p><a name="0693_0001">
+MURTAGH, F. 1983. "A Survey of Recent Advances in Hierarchical Clustering Algorithms." <i>Computer Journal</i>, 26, 354-59.</a></p><p><a name="0693_0001">
+MURTAGH, F. 1984. "Complexities of Hierarchic Clustering Algorithms: State of the Art." <i>Computational Statistics Quarterly</i>, 1, 101-13.</a></p><p><a name="0693_0001">
+MURTAGH, F. 1985. <i>Multidimensional Clustering Algorithms</i>. Vienna: Physica-Verlag (COMP-STAT Lectures 4).</a></p><p><a name="0693_0001">
+PERRY, S. A., and P. WILLETT. 1983. "A Review of the Use of Inverted 
+Files for Best Match Searching in Information Retrieval Systems." <i>J. Information Science</i>, 6, 59-66.</a></p><p><a name="0693_0001">
+ROHLF, F. J. 1982. "Single-Link Clustering Algorithms," <i>Classification, Pattern Recognition</i>, <i>and Reduction of Dimensionality</i>, eds. P. R. Krishnaiah and J. N. Kanal, pp. 267-84. Amsterdam: North-Holland (Handbook of Statistics, Vol. 2).</a></p><p><a name="0693_0001">
+ROMESBURG, H. C. 1984. <i>Cluster Analysis for Researchers</i>. Belmont, Calif.: Lifetime Learning.</a></p><p><a name="0693_0001">
+SALTON, G., ed. 1971. <i>The SMART Retrieval System</i>. Englewood Cliffs, N.J.: Prentice Hall.</a></p><p><a name="0693_0001">
+SALTON, G. 1989. <i>Automatic Text Processing</i>. Reading, Mass.: Addison-Wesley.</a></p><p><a name="0693_0001">
+SALTON, G., and D. BERGMARK. 1981. "Parallel Computations in Information Retrieval." <i>Lecture Notes in Computer Science</i>, 111, 328-42.</a></p><p><a name="0693_0001">
+SALTON, G., and C. BUCKLEY. 1988. "Term-Weighting Approaches in Automatic Text Retrieval." <i>Information Processing &amp; Management</i>, 24, 513-23.</a></p><p><a name="0693_0001">
+SIBSON, R. 1973. "SLINK: an Optimally Efficient Algorithm for the Single-Link Cluster Method." <i>Computer Journal</i>, 16, 30-34.</a></p><p><a name="0693_0001">
+SMALL, H., and E. SWEENEY. 1985. "Clustering the Science Citation Index Using Co-citations. I. A Comparison of Methods." <i>Scientometrics,</i> 7, 391-409.</a></p><p><a name="0693_0001">
+SNEATH, P. H. A., and R. R. Sokal. 1973. <i>Numerical Taxonomy; the Principles and Practice of Numerical Classification</i>. San Francisco: W. H. Freeman.</a></p><p><a name="0693_0001">
+SPATH, H. 1985. <i>Cluster Dissection and Analysis</i>. Chichester: Ellis Horwood.</a></p><p><a name="0693_0001">
+VAN RIJSBERGEN, C. J. 1971. "An Algorithm for Information Structuring and Retrieval." <i>Computer Journal</i>, 14, 407-12.</a></p><p><a name="0693_0001">
+VAN RIJSBERGEN, C. J. 1979. <i>Information Retrieval</i>. London: Butterworths.</a></p><p><a name="0693_0001">
+VOORHEES, E. M. 1986a. <i>The Effectiveness and Efficiency of Agglomerative Hierarchic Clustering in Document Retrieval</i>. Ph.D. thesis, Cornell University.</a></p><p><a name="0693_0001">
+VOORHEES, E. M. 1986b. "Implementing Agglomerative Hierarchic Clustering Algorithms for Use in Document Retrieval. <i>Information Processing &amp; Management</i>, 22, 465-76.</a></p><p><a name="0693_0001">
+WARD, J. H., JR. 1963. "Hierarchical Grouping to Optimize an Objective Function. <i>J. American Statistical Association</i>, 58(301), 235-44.</a></p><p><a name="0693_0001">
+WARD, J. H., JR. and M. E. HOOK. 1963. "Application of an Hierarchical Grouping Procedure to a Problem of Grouping Profiles." <i>Educational and Psychological Measurement</i>, 23, 69-81.</a></p><p><a name="0693_0001">
+WHITNEY, V. K. M. 1972. "Algorithm 422: Minimal Spanning Tree." <i>Communications of the ACM</i>, 15, 273-74.</a></p><p><a name="0693_0001">
+WILLETT, P. 1980. "Document Clustering Using an Inverted File Approach." <i>J. Information Science</i>, 2, 223-31.</a></p><p><a name="0693_0001">
+WILLETT, P. 1983. "Similarity Coefficients and Weighting Functions for 
+Automatic Document Classification: an Empirical Comparison." <i>International Classification</i>, 10, 138-42.</a></p><p><a name="0693_0001">
+WILLETT, P. 1988. "Recent Trends in Hierarchic Document Clustering: A Critical Review." <i>Information Processing &amp; Management</i>, 24(5), 577-97.</a></p><p><a name="0693_0001">
+WILLETT, P., and E. M. RASMUSSEN. 1990. <i>Parallel Database Processing</i>. London: Pitman (Research Monographs in Parallel and Distributed Computing).</a></p><p><a name="0693_0001">
+</a></p><p><a name="0693_0001">
+</a></p><p><a name="0693_0001">
+</a></p><center><a name="0693_0001">Go to </a><a href="http://orion.lcg.ufrj.br/Dr.Dobbs/books/book5/chap17.htm">Chapter 17</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Back to <a href="http://orion.lcg.ufrj.br/Dr.Dobbs/books/book5/toc.htm">Table of Contents</a>
+<p></p>
+</center>
+
+</body></html>

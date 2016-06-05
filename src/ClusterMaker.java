@@ -71,7 +71,7 @@ public class ClusterMaker
 		}
 		for(int i=0;i<totalEdges;i++)
 		{
-			if(count>=(totalBooks-1000))break;
+			if(count>=(totalBooks-3000))break;
 			int node1=edges[i].getB1();
 			int node2=edges[i].getB2();
 			int root1=find(node1);

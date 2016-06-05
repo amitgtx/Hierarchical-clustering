@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 public class DataComputations
 {
-	private ArrayList<Book> bookData=new ArrayList<Book>();
+	private ArrayList<Book> bookData;
 	private Edge[] edges;
 	private double[][] distance;
 
@@ -18,7 +18,9 @@ public class DataComputations
 
 
 	public void inputData()throws IOException
-	{int c=1;
+	{
+		bookData=new ArrayList<Book>(50000);
+		int c=1;
 		BufferedReader k=new BufferedReader(new InputStreamReader(System.in));
 	    String s=k.readLine();
 
@@ -32,15 +34,19 @@ public class DataComputations
 	      {
 	      	
 	        temp.setName(st.nextToken().trim());
-	        temp.setAuthor(st.nextToken().trim());
+	       String ww=st.nextToken().trim();
+	        temp.setAuthor(ww);
 	        while(st.hasMoreTokens())
 	        {
 		  String p=st.nextToken().trim();
 	          if(p.equals(""))continue;
-	          temp.getKeywords().add(p);
+	           temp.getKeywords().add(p);
 	        }
+	  
 	        bookData.add(temp);
+
 	      }
+	   
 	      s=k.readLine();
 	      c++;
 	   }
@@ -52,20 +58,25 @@ public class DataComputations
 	}
 
 
+
 	public void displayAllData()
 	{
 		for(int i=0;i<bookData.size();i++)
 	    {
 	      Book temp=bookData.get(i);
 	      System.out.println("Book name :"+temp.getName());
-	      System.out.println("Author :"+temp.getAuthor());
+	     System.out.println("Author :"+temp.getAuthor());
 	      System.out.println("Keywords :");
 	      for(int j=0;j<temp.getKeywords().size();j++)
 	      {
 	        System.out.println(temp.getKeywords().get(j));
 	      }
+
 	      System.out.println();
+	  
+	 
 	    }
+	  
 	}
 
 	public double compareBook(Book b1,Book b2)
@@ -138,6 +149,80 @@ public class DataComputations
 			System.out.println();
 		}
 	}
+
+
+ 
+	public void makeMST(int start)
+	{
+			int size=bookData.size();
+			// System.out.println("Size : "+size);
+			double D[]=new double[size];
+			int parent[]=new int[size];
+			int visited[]=new int[size];
+			TreeSet<A> s=new TreeSet<A>();
+			edges=new Edge[size];
+
+	
+
+			
+
+
+
+		D[start]=0;
+		parent[start]=start;
+		A temp=new A();
+		temp.distance=D[start];
+		temp.node=start;
+		s.add(temp);
+		int c=0;
+		while(!s.isEmpty())
+		{
+			
+			A top=s.pollFirst();
+			int x=top.node;
+			double xd=top.distance;
+			visited[x]=1;
+			Edge te=new Edge();
+			te.setB1(parent[x]);
+			te.setB2(x);
+			te.setWeight(xd);
+			edges[c]=te;
+			c++;
+			for(int y=0;y<size;y++)
+			{
+				if(y==x)continue;
+				Book b1=bookData.get(x);
+				Book b2=bookData.get(y);
+				double yd=compareBook(b1,b2);
+
+				if((yd>=D[y]) && (visited[y]==0))
+				{
+					A temp2=new A();
+					temp2.distance=D[y];
+					temp2.node=y;
+
+					if(s.contains(temp2))
+						s.remove(temp2);	
+
+					A temp3=new A();
+					temp3.distance=yd;
+					temp3.node=y;
+					
+					D[y]=yd;
+					parent[y]=x;
+					s.add(temp3);
+
+				}
+
+			}
+
+
+		}
+	
+
+	}
+	
+
 
 
 }

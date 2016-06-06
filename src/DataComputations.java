@@ -30,32 +30,39 @@ public class DataComputations
 	    {
 	      StringTokenizer st=new StringTokenizer(s,",<,>");
 	      Book temp=new Book();
-	      while(st.hasMoreTokens())
-	      {
+	 //     while(st.hasMoreTokens())
+	   //   {
 	      	
 	        temp.setName(st.nextToken().trim());
-	       String ww=st.nextToken().trim();
-	        temp.setAuthor(ww);
-	        while(st.hasMoreTokens())
+	       
+	        temp.setAuthor(st.nextToken().trim());
+
+	        int d=0;
+	        ArrayList<String> keywords=temp.getKeywords();
+	        while(st.hasMoreTokens()&&(d<3))
 	        {
-		  String p=st.nextToken().trim();
-	          if(p.equals(""))continue;
-	           temp.getKeywords().add(p);
+	           
+		 	   String p=st.nextToken().trim();
+	           if(p.equals(""))continue;
+	           keywords.add(p);
+	           d++;
 	        }
 	  
-	        bookData.add(temp);
+	        
 
-	      }
+	//      }
+	      bookData.add(temp);
 	   
 	      s=k.readLine();
 	      c++;
-	   }
-	   }
-	   catch(Exception e)
-	   {
-	    System.out.println(c);
-	   }
+	    }
+    }
+	  
+    catch(Exception e)
+	{
+	    System.out.println(c +"\t"+e.getMessage());
 	}
+  }
 
 
 
@@ -79,6 +86,11 @@ public class DataComputations
 	  
 	}
 
+	public int min(int a,int b)
+	{
+		return a<b?a:b;
+	}
+
 	public double compareBook(Book b1,Book b2)
 	{
 		ArrayList<String> keywords1=b1.getKeywords();
@@ -87,6 +99,7 @@ public class DataComputations
    		if(keywords2.contains("NULL"))return 0;
 		int c=0;
   //  System.out.println(b1.getName()+"\t"+b2.getName());
+		//for(int i=0;i<keywords1.size();i++)
 		for(int i=0;i<keywords1.size();i++)
 		{
 			String temp=keywords1.get(i);
@@ -98,7 +111,7 @@ public class DataComputations
    			  }
 		}
 
-	//	return ((2*(double)c)/(keywords1.size()+keywords2.size()))*100.0;
+		// return ((2*(double)c)/(keywords1.size()+keywords2.size()))*100.0;
 	return c;
 
 	}

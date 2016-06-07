@@ -49,7 +49,7 @@ public class ClusterMaker
 			{
 				System.out.println(temp.get(j).getName());
 			}
-			System.out.println();
+			System.out.println("\n\n");
 		}
 	}
 
@@ -71,7 +71,8 @@ public class ClusterMaker
 		}
 		for(int i=0;i<totalEdges;i++)
 		{
-			if(count>=(totalBooks-3000))break;
+			// if(count>=(totalBooks-310))break;
+			if(edges[i].getWeight()<23)break;
 			int node1=edges[i].getB1();
 			int node2=edges[i].getB2();
 			int root1=find(node1);

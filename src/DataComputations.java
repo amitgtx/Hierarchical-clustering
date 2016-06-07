@@ -39,7 +39,7 @@ public class DataComputations
 
 	        int d=0;
 	        ArrayList<String> keywords=temp.getKeywords();
-	        while(st.hasMoreTokens()&&(d<3))
+	        while(st.hasMoreTokens()&&(d<=1))
 	        {
 	           
 		 	   String p=st.nextToken().trim();
@@ -51,7 +51,7 @@ public class DataComputations
 	        
 
 	//      }
-	      bookData.add(temp);
+	      if(d!=0)bookData.add(temp);
 	   
 	      s=k.readLine();
 	      c++;
@@ -97,7 +97,8 @@ public class DataComputations
 		ArrayList<String> keywords2=b2.getKeywords();
    		if(keywords1.contains("NULL"))return 0;
    		if(keywords2.contains("NULL"))return 0;
-		int c=0;
+		// int c=1;
+		int sum=0;
   //  System.out.println(b1.getName()+"\t"+b2.getName());
 		//for(int i=0;i<keywords1.size();i++)
 		for(int i=0;i<keywords1.size();i++)
@@ -107,12 +108,15 @@ public class DataComputations
 			if(keywords2.contains(temp))
     			  {
     				//    System.out.println(temp);
-    			    c++;
+    				// sum+=(10000-c);
+    			    // c=2*c;
+    			    if(i==0)sum+=20;
+    			    else sum+=3;
    			  }
 		}
 
 		// return ((2*(double)c)/(keywords1.size()+keywords2.size()))*100.0;
-	return c;
+	return sum;
 
 	}
 

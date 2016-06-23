@@ -44,6 +44,7 @@ public class Tester
 	*/
         	ClusterMaker s=new ClusterMaker();
 		s.compute(edges,r.getBookData());
+		s.sortClusters();
 		s.displayCluster();
 
 

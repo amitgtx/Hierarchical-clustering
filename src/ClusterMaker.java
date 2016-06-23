@@ -99,5 +99,10 @@ public class ClusterMaker
 
 	}
 
+	public void sortClusters()
+	{
+		Arrays.sort(clusters);
+	}
+
 
 }

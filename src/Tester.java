@@ -45,8 +45,10 @@ public class Tester
         	ClusterMaker s=new ClusterMaker();
 		s.compute(edges,r.getBookData());
 		s.sortClusters();
-		s.displayCluster();
-
+		// s.displayCluster();
+		Cluster[] clusters=s.getClusters();
+		Cluster_SQL t=new Cluster_SQL();
+		t.compute(clusters);
 
 	  }
 }

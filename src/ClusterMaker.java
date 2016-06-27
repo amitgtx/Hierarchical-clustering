@@ -9,6 +9,11 @@ public class ClusterMaker
 	private int totalBooks;
 	private int totalEdges;
 
+	public Cluster[] getClusters()
+	{
+		return clusters;
+	}
+
 	public int find(int x)
 	{
 		if(parent[x]!=x)

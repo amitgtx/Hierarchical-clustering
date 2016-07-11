@@ -1,0 +1,67 @@
+#parent
+{
+	height:600px;
+	background-color: white;
+	padding: 10px;
+	background-color: orange;
+
+
+}
+
+#header
+{
+	height:70px;
+	width :50%;
+	margin: auto;
+	/*margin-left: auto;
+	margin-right: auto;
+	
+	margin-bottom: 20px;*/
+
+	background-color: yellow;
+	text-align: center;
+}
+
+#left-bar
+{
+	height: 300px;
+	width: 70px;
+	float: left;
+	background-color: yellow;
+	margin: 10px;
+	border: 10px solid black;
+	padding: 5px;
+	
+}
+
+#right-bar
+{
+	height: 300px;
+	width: 70px;
+	float: right;
+	background-color: yellow;
+	
+}
+
+#footer
+{
+	height:70px;
+	width :800px;
+	margin-left: auto;
+	margin-right: auto;
+	clear: both;
+	margin: auto;
+	background-color: yellow;
+}
+
+#center
+{
+	height: 100px;
+	width: 100px;
+	margin: auto;
+
+	background-color: yellow;
+	position: relative;
+	top: 50%;
+	left: 50%;
+}
